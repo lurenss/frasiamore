@@ -120,14 +120,21 @@ app.post('/signup',
         res.redirect('/main');
 });
 
-app.post("/quotes",
-    function (req,res,next) {
-    i = parseInt(Math.random() * (16));
-    Quote.findOne({"id" : i},function (err,quote) {
-        if(err) return next(err);
-        console.log(quote.quote);
-        res.render("main",{n:req.session.n, q:quote.quote});
-    });
+app.post("/quotes",function (req,res,next) {
+    // Get the count of all users
+    Quote.count().exec(function (err, count) {
+
+        // Get a random entry
+        var random = Math.floor(Math.random() * count);
+
+        // Again query all users but only fetch one offset by our random #
+        Quote.findOne().skip(random).exec(
+            function (err, result) {
+                // Tada! random user
+                console.log(result.quote);
+                res.render("main",{n:req.session.n, q:result.quote})
+            })
+    })
 });
 
 // catch 404 and forward to error handler
